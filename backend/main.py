@@ -16,7 +16,7 @@ allow_origins = config.get('cors', 'allow_origins')
 allow_origins = [i.strip() for i in allow_origins.split(',')]
 allow_origin_regex = config.get('cors', 'allow_origin_regex')
 
-app = FastAPI()
+app = FastAPI(docs_url=None)
 
 app.add_middleware(
     CORSMiddleware,
