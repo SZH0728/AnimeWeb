@@ -19,18 +19,24 @@ def get_total_page(limit: int, query) -> tuple[int, ...]:
     return total, total_page
 
 
-def get_anime_list(page: int, limit: int, min_vote: int, session: Session):
-    time = datetime.now().date() - timedelta(days=1)
-
+def get_anime_by_time(limit, min_vote, page, session, time):
     query = session.query(Score.detailId, Score.score, Score.vote)
     query = query.filter(Score.vote >= min_vote, Score.date == time)
     query = query.order_by(Score.score.desc())
-
     offset = (page - 1) * limit
-
     total, total_page = get_total_page(limit, query)
-
     paginated_result = query.offset(offset).limit(limit).all()
+    return paginated_result, total, total_page
+
+
+def get_anime_list(page: int, limit: int, min_vote: int, session: Session):
+    time = datetime.now().date() - timedelta(days=1)
+
+    paginated_result, total, total_page = get_anime_by_time(limit, min_vote, page, session, time)
+    if not paginated_result:
+        time_item = session.query(Score.date).order_by(Score.id.desc()).first()
+        time = time_item.date
+        paginated_result, total, total_page = get_anime_by_time(limit, min_vote, page, session, time)
 
     detail_query = session.query(Detail.name, Detail.translation, Detail.tag, Detail.description, Detail.picture)
     anime_list = [detail_query.filter(Detail.id == score.detailId).first() for score in paginated_result]
