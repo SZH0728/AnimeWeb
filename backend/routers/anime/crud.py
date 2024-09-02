@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from database import Detail, Score, NameID, Cache
+from database import Detail, Score, NameID, Web
 
 
 class AllNoneAttribute(object):
@@ -96,14 +96,40 @@ def get_search_anime_list(keyword: list, page: int, limit: int, session: Session
     return result
 
 
-def get_anime_detail(anime_id: int, session: Session) -> Detail:
+def get_anime_detail(anime_id: int, session: Session) -> dict:
     query = session.query(Detail).filter(Detail.id == anime_id)
-    return query.first()
+    detail: Detail = query.first()
+    web = session.query(Web).filter(Web.id == detail.web).first()
+    result = {
+        "id": detail.id,
+        "name": detail.name,
+        "translation": detail.translation,
+        "alias": [i for i in detail.alias if i],
+        "time": detail.time,
+        "tag": [i for i in detail.tag if i],
+        "director": detail.director,
+        "cast": [i for i in detail.cast if i],
+        "description": detail.description,
+        "source": web.name,
+        "url": web.host + web.url_format.format(detail.webId),
+        "picture": detail.picture
+    }
+    return result
 
 
 def get_anime_score_history(anime_id: int, session: Session):
-    query = session.query(Score).filter(Score.detailId == anime_id)
-    return query.all()
+    query = session.query(Score.detailScore, Score.score, Score.vote, Score.date
+                          ).filter(Score.detailId == anime_id).all()
+    result = [{'detailScore': i.detailScore, 'score': i.score, 'vote': i.vote, 'date': i.date} for i in query]
+    return result
+
+
+def get_web_info(session: Session):
+    query = session.query(Web.id, Web.name).all()
+    result = {}
+    for i in query:
+        result[str(i.id)] = i.name
+    return result
 
 
 if __name__ == '__main__':

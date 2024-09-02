@@ -85,5 +85,27 @@ class AnimeList(BaseModel):
     data: list[AnimeListDetail]
 
 
+class AnimeDetail(BaseModel):
+    id: int
+    name: str
+    translation: str | None = None
+    alias: list[str] | None = None
+    time: date | None = None
+    tag: list[str] | None = None
+    director: str | None = None
+    cast: list[str] | None = None
+    description: str | None = None
+    source: str | None = None
+    url: str | None = None
+    picture: str | None = None
+
+
+class AnimeScore(BaseModel):
+    detailScore: dict[str, dict]
+    score: Decimal | None = None
+    vote: int | None = None
+    date: date
+
+
 if __name__ == '__main__':
     pass

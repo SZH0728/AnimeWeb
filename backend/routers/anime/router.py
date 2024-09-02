@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from dependencies import session
-from routers.anime.schemas import AnimeList, Detail
-from routers.anime.crud import get_anime_detail, get_anime_list, get_search_anime_list
+from routers.anime.schemas import AnimeList, AnimeDetail, AnimeScore
+from routers.anime.crud import (get_anime_detail, get_anime_list, get_web_info,
+                                get_search_anime_list, get_anime_score_history)
 
 anime = APIRouter(
     prefix="/anime",
@@ -25,9 +26,21 @@ def anime_list(
     return result
 
 
-@anime.get('/anime/{anime_id}', response_model=Detail)
+@anime.get('/detail/{anime_id}', response_model=AnimeDetail)
 def anime_detail(anime_id: int, db: Session = Depends(session)):
     result = get_anime_detail(anime_id, db)
+    return result
+
+
+@anime.get('/score/{anime_id}', response_model=list[AnimeScore])
+def anime_score(anime_id: int, db: Session = Depends(session)):
+    result = get_anime_score_history(anime_id, db)
+    return result
+
+
+@anime.get('/webinfo', response_model=dict)
+def anime_web_info(db: Session = Depends(session)):
+    result = get_web_info(db)
     return result
 
 
