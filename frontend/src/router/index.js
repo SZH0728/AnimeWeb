@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ListView from "@/views/ListView.vue";
+import SearchView from "@/views/SearchView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +17,12 @@ const router = createRouter({
       name: 'list',
       component: ListView,
       meta: {'title': '排名'}
+    },
+    {
+      path: '/search/:keyword',
+      name: 'search',
+      component: SearchView,
+      meta: {'title': '搜索'}
     }
   ]
 })
