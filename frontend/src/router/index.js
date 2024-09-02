@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ListView from "@/views/ListView.vue";
 import SearchView from "@/views/SearchView.vue";
+import DetailView from "@/views/DetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,7 +24,13 @@ const router = createRouter({
       name: 'search',
       component: SearchView,
       meta: {'title': '搜索'}
-    }
+    },
+      {
+          path: '/anime/:id',
+          name: 'detail',
+          component: DetailView,
+          meta: {'title': '详情'}
+      }
   ]
 })
 
