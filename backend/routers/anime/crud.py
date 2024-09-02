@@ -8,6 +8,12 @@ from sqlalchemy.orm import Session
 from database import Detail, Score, NameID, Cache
 
 
+def get_total_page(limit: int, query) -> tuple[int, ...]:
+    total = query.count()
+    total_page = total // limit + (1 if total % limit else 0)
+    return total, total_page
+
+
 def get_anime_list(page: int, limit: int, min_vote: int, session: Session):
     time = datetime.now().date() - timedelta(days=1)
 
@@ -17,8 +23,7 @@ def get_anime_list(page: int, limit: int, min_vote: int, session: Session):
 
     offset = (page - 1) * limit
 
-    total = query.count()
-    total_page = total // limit + (1 if total % limit else 0)
+    total, total_page = get_total_page(limit, query)
 
     paginated_result = query.offset(offset).limit(limit).all()
 
@@ -42,9 +47,46 @@ def get_anime_list(page: int, limit: int, min_vote: int, session: Session):
     return result
 
 
+def get_search_anime_list(keyword: list, page: int, limit: int, session: Session):
+    search_kw = '%'.join([i for i in keyword if i])
+    search_kw = f'%{search_kw}%'
+    offset = (page - 1) * limit
+
+    query = session.query(NameID.id)
+    query = query.filter(NameID.name.like(search_kw))
+    query = query.offset(offset).limit(limit)
+    id_list = list(set([i.id for i in query]))
+
+    total = len(id_list)
+    total_page = total // limit + (1 if total % limit else 0)
+
+    detail_query = session.query(Detail.name, Detail.translation, Detail.tag, Detail.description, Detail.picture)
+    anime_list = [detail_query.filter(Detail.id == id_).first() for id_ in id_list]
+
+    score_query = session.query(Score.score, Score.vote)
+    score_query = score_query.order_by(Score.date.desc())
+    score_list = [score_query.filter(Score.detailId == id_).first() for id_ in id_list]
+
+    result = {'total': total, 'total_page': total_page, 'data': []}
+    for index, id_ in enumerate(id_list):
+        data = {
+            'id': id_,
+            'name': anime_list[index].name,
+            'translation': anime_list[index].translation,
+            'tag': [i for i in anime_list[index].tag if i],
+            'description': anime_list[index].description,
+            'picture': anime_list[index].picture,
+            'score': score_list[index].score,
+            'vote': score_list[index].vote
+        }
+        result['data'].append(data)
+    return result
+
+
 def get_anime_detail(anime_id: int, session: Session) -> Detail:
     query = session.query(Detail).filter(Detail.id == anime_id)
     return query.first()
+
 
 def get_anime_score_history(anime_id: int, session: Session):
     query = session.query(Score).filter(Score.detailId == anime_id)

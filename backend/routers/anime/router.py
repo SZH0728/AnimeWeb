@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from dependencies import session
 from routers.anime.schemas import AnimeList, Detail
-from routers.anime.crud import get_anime_detail, get_anime_list
+from routers.anime.crud import get_anime_detail, get_anime_list, get_search_anime_list
 
 anime = APIRouter(
     prefix="/anime",
@@ -28,6 +28,17 @@ def anime_list(
 @anime.get('/anime/{anime_id}', response_model=Detail)
 def anime_detail(anime_id: int, db: Session = Depends(session)):
     result = get_anime_detail(anime_id, db)
+    return result
+
+
+@anime.get('/search', response_model=AnimeList)
+def anime_search(
+        keyword: str,
+        page: int | None = 1,
+        limit: int | None = 10,
+        db: Session = Depends(session)):
+    keyword = keyword.strip().split()
+    result = get_search_anime_list(keyword, page, limit, db)
     return result
 
 
