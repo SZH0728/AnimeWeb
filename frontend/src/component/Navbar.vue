@@ -67,7 +67,7 @@ const router = useRouter();
 function search() {
   if (searchTerm.value.trim()) {
     router.push(`/search/${searchTerm.value.trim()}`);
-    searchTerm.value = ''; // 清空输入框
+    searchTerm.value = searchTerm.value.trim();
   }
 }
 </script>

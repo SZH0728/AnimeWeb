@@ -20,9 +20,12 @@
               <!-- 标题与评分投票 -->
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <h5 class="card-title">{{ anime.name }}</h5>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center" v-if="anime.score !== null && anime.vote !== null">
                   <span class="badge bg-light text-dark me-2">{{ anime.score }}</span>
                   <span class="badge bg-light text-dark">{{ anime.vote }} 票</span>
+                </div>
+                <div v-else>
+                  <span class="badge bg-light text-dark">暂无数据</span>
                 </div>
               </div>
 

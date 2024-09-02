@@ -1,6 +1,6 @@
 
 <template>
-  <nav aria-label="Page navigation example" v-if="totalPage !== 1">
+  <nav aria-label="Page navigation example" v-if="totalPage > 1">
     <ul class="pagination">
       <li class="page-item" :class="{ disabled: currentPage === 1 }">
         <button class="page-link" href="#" @click.prevent="changeConfirmPage(1)">首页</button>
