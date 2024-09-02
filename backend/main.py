@@ -16,7 +16,41 @@ allow_origins = config.get('cors', 'allow_origins')
 allow_origins = [i.strip() for i in allow_origins.split(',')]
 allow_origin_regex = config.get('cors', 'allow_origin_regex')
 
-app = FastAPI(docs_url=None)
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": "%(levelprefix)s %(message)s",
+            "use_colors": None,
+        },
+        "access": {
+            "()": "uvicorn.logging.AccessFormatter",
+            "fmt": '%(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s',
+        },
+    },
+    "handlers": {
+        "default": {
+            "formatter": "default",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./default.txt"
+        },
+        "access": {
+            "formatter": "access",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./access.txt"
+
+        },
+    },
+    "loggers": {
+        "": {"handlers": ["default"], "level": "INFO"},
+        "uvicorn.error": {"level": "INFO"},
+        "uvicorn.access": {"handlers": ["access"], "level": "INFO", "propagate": False},
+    }
+}
+
+app = FastAPI(docs_url=None, redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,4 +62,5 @@ app.include_router(anime)
 
 
 if __name__ == '__main__':
-    pass
+    from uvicorn import run
+    run(app, host='0.0.0.0', port=60000, log_config=LOGGING_CONFIG)
