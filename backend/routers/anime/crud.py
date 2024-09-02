@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 from database import Detail, Score, NameID, Cache
 
 
+class AllNoneAttribute(object):
+    def __getattr__(self, item):
+        return None
+
+
 def get_total_page(limit: int, query) -> tuple[int, ...]:
     total = query.count()
     total_page = total // limit + (1 if total % limit else 0)
@@ -69,15 +74,17 @@ def get_search_anime_list(keyword: list, page: int, limit: int, session: Session
 
     result = {'total': total, 'total_page': total_page, 'data': []}
     for index, id_ in enumerate(id_list):
+        score = score_list[index] if score_list[index] else AllNoneAttribute()
+        anime = anime_list[index]
         data = {
             'id': id_,
-            'name': anime_list[index].name,
-            'translation': anime_list[index].translation,
-            'tag': [i for i in anime_list[index].tag if i],
-            'description': anime_list[index].description,
-            'picture': anime_list[index].picture,
-            'score': score_list[index].score,
-            'vote': score_list[index].vote
+            'name': anime.name,
+            'translation': anime.translation,
+            'tag': [i for i in anime.tag if i],
+            'description': anime.description,
+            'picture': anime.picture,
+            'score': score.score,
+            'vote': score.vote
         }
         result['data'].append(data)
     return result
