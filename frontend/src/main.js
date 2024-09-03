@@ -10,6 +10,6 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 const app = createApp(App)
 
 app.use(router)
-app.config.globalProperties.$BASE_API_URL = 'http://localhost:8000'
+app.config.globalProperties.$BASE_API_URL = 'http://sunnyrain.top:60000'
 
 app.mount('#app')
