@@ -1,13 +1,17 @@
 # -*- coding:utf-8 -*-
 # AUTHOR: Sun
 
-from fastapi import APIRouter, Depends
+from re import compile
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from dependencies import session
 from routers.anime.schemas import AnimeList, AnimeDetail, AnimeScore
-from routers.anime.crud import (get_anime_detail, get_anime_list, get_web_info,
+from routers.anime.crud import (get_anime_detail, get_anime_list, get_web_info, get_anime_season,
                                 get_search_anime_list, get_anime_score_history)
+
+SEASON_REGEX = compile(r'^\d{2}[CXQD]$')
 
 anime = APIRouter(
     prefix="/anime",
@@ -23,6 +27,19 @@ def anime_list(
         min_vote: int | None = 0,
         db: Session = Depends(session)):
     result = get_anime_list(page, limit, min_vote, db)
+    return result
+
+
+@anime.get('/season', response_model=AnimeList)
+def anime_season(
+        season: str | None,
+        page: int | None = 1,
+        limit: int | None = 10,
+        min_vote: int | None = 0,
+        db: Session = Depends(session)):
+    if not SEASON_REGEX.match(season):
+        raise HTTPException(status_code=400, detail="Invalid season")
+    result = get_anime_season(page, limit, min_vote, season, db)
     return result
 
 
