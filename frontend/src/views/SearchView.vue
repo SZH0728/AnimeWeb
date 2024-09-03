@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, watch} from 'vue';
+import {ref, onMounted, watch, getCurrentInstance} from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -28,6 +28,9 @@ import Paginate from "@/component/Paginate.vue";
 import ShowLoadingCondition from "@/component/ShowLoadingCondition.vue";
 import AnimeList from "@/component/AnimeList.vue";
 import ShowTitleAndCondition from "@/component/ShowTitleAndCondition.vue";
+
+const { proxy } = getCurrentInstance();
+const baseUrl = proxy?.$BASE_API_URL;
 
 // 获取参数
 const route = useRoute();
@@ -53,12 +56,13 @@ async function getData(page) {
   loading.value = true;
 
   // 清空数据
+  errorMessage.value = ''
   data.value = [];
   totalAnime.value = 0
   totalPage.value = 0
 
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/anime/search?keyword=${keyword.value}&page=${page}`);
+    const response = await axios.get(baseUrl+`/anime/search?keyword=${keyword.value}&page=${page}`);
     data.value = response.data.data;
     totalAnime.value = response.data['total'];
     totalPage.value = response.data['total_page'];

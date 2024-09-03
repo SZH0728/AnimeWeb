@@ -56,12 +56,16 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch} from 'vue';
+import {getCurrentInstance, onMounted, ref, watch} from 'vue';
 import {useRoute} from "vue-router";
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 
 import ShowLoadingCondition from "@/component/ShowLoadingCondition.vue";
+
+
+const { proxy } = getCurrentInstance();
+const baseUrl = proxy?.$BASE_API_URL;
 
 // 获取参数
 const route = useRoute();
@@ -83,8 +87,9 @@ const errorMessage = ref('');
 
 async function getDetail(id) {
   loading.value = true;
+  errorMessage.value = ''
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/anime/detail/${id}`);
+    const response = await axios.get(baseUrl+`/anime/detail/${id}`);
     detail.value = response.data;
   } catch (error) {
     // 处理错误
@@ -97,11 +102,12 @@ async function getDetail(id) {
 
 async function getScoreHistory(id) {
   loading.value = true;
+  errorMessage.value = ''
   try {
-    let response = await axios.get(`http://127.0.0.1:8000/anime/score/${id}`);
+    let response = await axios.get(baseUrl+`/anime/score/${id}`);
     scores.value = response.data;
 
-    response = await axios.get('http://127.0.0.1:8000/anime/webinfo');
+    response = await axios.get(baseUrl+'/anime/webinfo');
     web.value = response.data;
   } catch (error) {
     // 处理错误
