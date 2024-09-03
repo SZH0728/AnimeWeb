@@ -79,8 +79,8 @@ watch(() => route.params.id, (newId) => {
 // 定义数据状态
 const detail = ref({});
 const scores = ref([]);
-const web = ref({})
 const loading = ref(false);
+const web = ref(localStorage.getItem('webInfo'))
 
 // 定义错误信息
 const errorMessage = ref('');
@@ -107,8 +107,11 @@ async function getScoreHistory(id) {
     let response = await axios.get(baseUrl+`/anime/score/${id}`);
     scores.value = response.data;
 
-    response = await axios.get(baseUrl+'/anime/webinfo');
-    web.value = response.data;
+    if (!web){
+      response = await axios.get(baseUrl+'/anime/webinfo');
+      web.value = response.data;
+      localStorage.setItem('webInfo', web.value)
+    }
   } catch (error) {
     // 处理错误
     console.error('Error fetching data:', error);
