@@ -48,6 +48,7 @@ async function changeConfirmPage(page) {
   if (page >= 1 && page <= props.totalPage && page !== currentPage.value) {
     currentPage.value = page;
     await props.changePage(page);
+    window.scrollTo({top: 0, behavior: 'smooth'})
   }
 }
 
