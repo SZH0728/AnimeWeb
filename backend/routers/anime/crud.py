@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # AUTHOR: Sun
 
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, select
 from sqlalchemy.engine import row
 from sqlalchemy.orm import Session
 
@@ -137,11 +137,11 @@ def get_anime_list(page: int, limit: int, min_vote: int, session: Session) -> di
     :param session: 数据库会话
     :return: 动漫列表结果
     """
-    # 创建子查询，筛选出每个detailId下的最高投票日期
+    # 创建子查询，筛选出每个detailId下的最新投票日期
     subquery = (
         session.query(
             Score.detailId,
-            func.max(Score.date).label('max_date')
+            func.max(Score.date).label('latest_date')
         )
         .filter(Score.vote >= min_vote)  # 筛选出投票数大于等于最低投票数的记录
         .group_by(Score.detailId)  # 按detailId分组
@@ -151,7 +151,7 @@ def get_anime_list(page: int, limit: int, min_vote: int, session: Session) -> di
     # 创建主查询，筛选出每个detailId下最高投票日期的评分记录
     query = (
         session.query(Score.detailId, Score.score, Score.vote)
-        .join(subquery, (Score.detailId == subquery.c.detailId) & (Score.date == subquery.c.max_date))
+        .join(subquery, (Score.detailId == subquery.c.detailId) & (Score.date == subquery.c.latest_date))
         .order_by(Score.score.desc())  # 按评分降序排序
     )
 
@@ -170,13 +170,12 @@ def get_anime_season(page: int, limit: int, min_vote: int, season: str, session:
     :return: 动漫列表结果
     """
     # 创建子查询，筛选出指定季度的detailId
-    detail_ids = session.query(Detail.id).filter(Detail.season == season).subquery()
+    detail_ids = select(Detail.id).filter(Detail.season == season).scalar_subquery()
 
-    # 创建子查询，筛选出每个detailId下的最高评分和最新日期
+    # 创建子查询，筛选出每个detailId下最新日期
     subquery = (
         session.query(
             Score.detailId,
-            func.max(Score.score).label('max_score'),
             func.max(Score.date).label('latest_date')
         )
         .filter(Score.detailId.in_(detail_ids))  # 筛选出detailId在指定季度内的记录
@@ -184,12 +183,11 @@ def get_anime_season(page: int, limit: int, min_vote: int, season: str, session:
         .subquery()  # 创建子查询
     )
 
-    # 创建主查询，筛选出每个detailId下最高评分和最新日期的评分记录
+    # 创建主查询，筛选出每个detailId下最新日期的评分记录
     scores_query = (
         session.query(Score.detailId, Score.score, Score.vote)
         .join(subquery, and_(
             Score.detailId == subquery.c.detailId,
-            Score.score == subquery.c.max_score,
             Score.date == subquery.c.latest_date
         ))
         .filter(Score.vote >= min_vote)  # 筛选出投票数大于等于最低投票数的记录
