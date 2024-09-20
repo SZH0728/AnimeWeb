@@ -80,7 +80,9 @@ watch(() => route.params.id, (newId) => {
 const detail = ref({});
 const scores = ref([]);
 const loading = ref(false);
-const web = ref(localStorage.getItem('webInfo'))
+let webInfo = localStorage.getItem('webInfo')
+webInfo = JSON.parse(webInfo)
+// let webInfo = null
 
 // 定义错误信息
 const errorMessage = ref('');
@@ -107,10 +109,10 @@ async function getScoreHistory(id) {
     let response = await axios.get(baseUrl+`/anime/score/${id}`);
     scores.value = response.data;
 
-    if (!web){
+    if (!webInfo){
       response = await axios.get(baseUrl+'/anime/webinfo');
-      web.value = response.data;
-      localStorage.setItem('webInfo', web.value)
+      webInfo = response.data;
+      localStorage.setItem('webInfo', JSON.stringify(webInfo))
     }
   } catch (error) {
     // 处理错误
@@ -121,191 +123,117 @@ async function getScoreHistory(id) {
   loading.value = false;
 }
 
-function addValueToDataset(value) {
-  value.fill = false;
-  value.showLine = true;
-  value.borderWidth = 1;
-  return value
-}
-
 function drawChart(data, webInfo) {
   const scoreCanvasChart = document.getElementById('scoreChartCanvas');
   const voteCanvasChart = document.getElementById('voteChartCanvas');
 
   const labels = [];
-  let bangumiScoreDataset = [];
-  let bangumiVoteDataset = [];
-  let anikoreScoreDataset = [];
-  let anikoreVoteDataset = [];
-  let anidbScoreDataset = [];
-  let anidbVoteDataset = [];
-  let myAnimeListScoreDataset = [];
-  let myAnimeListVoteDataset = [];
-  let sumScoreDataset = [];
-  let sumVoteDataset = [];
+  const datasets = {
+    bangumi: { score: [], vote: [] },
+    anikore: { score: [], vote: [] },
+    anidb: { score: [], vote: [] },
+    myAnimeList: { score: [], vote: [] },
+    sum: { score: [], vote: [] }
+  };
 
   for (let i = 0; i < data.length; i++) {
     const childData = data[i];
     labels.push(childData.date);
 
-    let hasInsertBangumiData = false;
-    let hasInsertAnikoreData = false;
-    let hasInsertAnidbData = false;
-    let hasInsertMyAnimeListData = false;
-
-    for (const key in childData.detailScore) {
-      if (childData.detailScore.hasOwnProperty(key)) {
-        const innerScores = childData.detailScore[key];
+    for (const key in childData["detailScore"]) {
+      if (childData["detailScore"].hasOwnProperty(key)) {
+        const innerScores = childData["detailScore"][key];
         const webName = webInfo[key];
 
-        if (webName === 'Bangumi') {
-          bangumiScoreDataset.push(innerScores.score);
-          bangumiVoteDataset.push(innerScores.vote);
-          hasInsertBangumiData = true;
-        } else if (webName === 'Anikore') {
-          anikoreScoreDataset.push(innerScores.score);
-          anikoreVoteDataset.push(innerScores.vote);
-          hasInsertAnikoreData = true;
-        } else if (webName === 'Anidb') {
-          anidbScoreDataset.push(innerScores.score);
-          anidbVoteDataset.push(innerScores.vote);
-          hasInsertAnidbData = true;
-        } else if (webName === 'MyAnimeList') {
-          myAnimeListScoreDataset.push(innerScores.score);
-          myAnimeListVoteDataset.push(innerScores.vote);
-          hasInsertMyAnimeListData = true;
+        switch (webName) {
+          case 'Bangumi':
+            datasets.bangumi.score.push(innerScores.score);
+            datasets.bangumi.vote.push(innerScores.vote);
+            break;
+          case 'Anikore':
+            datasets.anikore.score.push(innerScores.score);
+            datasets.anikore.vote.push(innerScores.vote);
+            break;
+          case 'Anidb':
+            datasets.anidb.score.push(innerScores.score);
+            datasets.anidb.vote.push(innerScores.vote);
+            break;
+          case 'MyAnimeList':
+            datasets.myAnimeList.score.push(innerScores.score);
+            datasets.myAnimeList.vote.push(innerScores.vote);
+            break;
         }
       }
     }
 
-    if (!hasInsertBangumiData) {
-      bangumiScoreDataset.push(null);
-      bangumiVoteDataset.push(null);
-    }
+    // Fill missing values with null
+    const fillMissingValues = (dataset) => {
+      if (datasets[dataset].score.length < i + 1) {
+        datasets[dataset].score.push(null);
+        datasets[dataset].vote.push(null);
+      }
+    };
 
-    if (!hasInsertAnikoreData) {
-      anikoreScoreDataset.push(null);
-      anikoreVoteDataset.push(null);
-    }
+    fillMissingValues('bangumi');
+    fillMissingValues('anikore');
+    fillMissingValues('anidb');
+    fillMissingValues('myAnimeList');
 
-    if (!hasInsertAnidbData) {
-      anidbScoreDataset.push(null);
-      anidbVoteDataset.push(null);
-    }
-
-    if (!hasInsertMyAnimeListData) {
-      myAnimeListScoreDataset.push(null);
-      myAnimeListVoteDataset.push(null);
-    }
-
-    sumScoreDataset.push(childData.score);
-    sumVoteDataset.push(childData.vote);
+    datasets.sum.score.push(childData.score);
+    datasets.sum.vote.push(childData.vote);
   }
 
-  bangumiScoreDataset = addValueToDataset({
-    label: 'bangumiScore',
-    data: bangumiScoreDataset,
-    backgroundColor: 'rgba(255,182,193)',
-    borderColor: 'rgba(255,182,193)',
+  const createDataset = (label, data, color) => ({
+    label,
+    data,
+    backgroundColor: color,
+    borderColor: color
   });
 
-  bangumiVoteDataset = addValueToDataset({
-    label: 'bangumiVote',
-    data: bangumiVoteDataset,
-    backgroundColor: 'rgba(255,182,193)',
-    borderColor: 'rgba(255,182,193)',
+  const scoreDatasets = Object.keys(datasets).map((key) => {
+    const color = {
+      bangumi: 'rgba(255,182,193)',
+      anikore: 'rgb(255,221,0)',
+      anidb: 'rgba(169,169,169)',
+      myAnimeList: 'rgba(65,105,225)',
+      sum: 'rgba(144,238,144)'
+    }[key];
+    return createDataset(`${key}Score`, datasets[key].score, color);
   });
 
-  anikoreScoreDataset = addValueToDataset({
-    label: 'anikoreScore',
-    data: anikoreScoreDataset,
-    backgroundColor: 'rgb(255,221,0)',
-    borderColor: 'rgb(255,221,0)',
+  const voteDatasets = Object.keys(datasets).map((key) => {
+    const color = {
+      bangumi: 'rgba(255,182,193)',
+      anikore: 'rgb(255,221,0)',
+      anidb: 'rgba(169,169,169)',
+      myAnimeList: 'rgba(65,105,225)',
+      sum: 'rgba(144,238,144)'
+    }[key];
+    return createDataset(`${key}Vote`, datasets[key].vote, color);
   });
 
-  anikoreVoteDataset = addValueToDataset({
-    label: 'anikoreVote',
-    data: anikoreVoteDataset,
-    backgroundColor: 'rgb(255,221,0)',
-    borderColor: 'rgb(255,221,0)',
-  });
-
-  anidbScoreDataset = addValueToDataset({
-    label: 'anidbScore',
-    data: anidbScoreDataset,
-    backgroundColor: 'rgba(169,169,169)',
-    borderColor: 'rgba(169,169,169)',
-  });
-
-  anidbVoteDataset = addValueToDataset({
-    label: 'anidbVote',
-    data: anidbVoteDataset,
-    backgroundColor: 'rgba(169,169,169)',
-    borderColor: 'rgba(169,169,169)',
-  });
-
-  myAnimeListScoreDataset = addValueToDataset({
-    label: 'myAnimeListScore',
-    data: myAnimeListScoreDataset,
-    backgroundColor: 'rgba(65,105,225)',
-    borderColor: 'rgba(65,105,225)',
-  });
-
-  myAnimeListVoteDataset = addValueToDataset({
-    label: 'myAnimeListVote',
-    data: myAnimeListVoteDataset,
-    backgroundColor: 'rgba(65,105,225)',
-    borderColor: 'rgba(65,105,225)',
-  });
-
-  sumScoreDataset = addValueToDataset({
-    label: 'sumScore',
-    data: sumScoreDataset,
-    backgroundColor: 'rgba(144,238,144)',
-    borderColor: 'rgba(144,238,144)',
-  });
-
-  sumVoteDataset = addValueToDataset({
-    label: 'sumVote',
-    data: sumVoteDataset,
-    backgroundColor: 'rgba(144,238,144)',
-    borderColor: 'rgba(144,238,144)',
-  });
-
-  let scoreChart = new Chart(scoreCanvasChart, {
+  new Chart(scoreCanvasChart, {
     type: 'line',
     data: {
-      labels: labels,
-      datasets: [
-        bangumiScoreDataset,
-        anikoreScoreDataset,
-        anidbScoreDataset,
-        myAnimeListScoreDataset,
-        sumScoreDataset
-      ]
+      labels,
+      datasets: scoreDatasets
     }
-  })
+  });
 
-  let voteChart = new Chart(voteCanvasChart, {
+  new Chart(voteCanvasChart, {
     type: 'line',
     data: {
-      labels: labels,
-      datasets: [
-        bangumiVoteDataset,
-        anikoreVoteDataset,
-        anidbVoteDataset,
-        myAnimeListVoteDataset,
-        sumVoteDataset
-      ]
+      labels,
+      datasets: voteDatasets
     }
-  })
-
+  });
 }
+
 
 async function getData(id) {
   await getDetail(id)
   await getScoreHistory(id)
-  drawChart(scores.value, web.value)
+  drawChart(scores.value, webInfo)
 }
 
 onMounted(() => {
