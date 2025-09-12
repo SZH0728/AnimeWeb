@@ -33,14 +33,19 @@ LOGGING_CONFIG = {
     "handlers": {
         "default": {
             "formatter": "default",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./default.txt"
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "./default.txt",
+            "mode": "w+",
+            "maxBytes": 1048576,
+            "encoding": "utf8"
         },
         "access": {
             "formatter": "access",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./access.txt"
-
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "./access.txt",
+            "mode": "w+",
+            "maxBytes": 1048576,
+            "encoding": "utf8"
         },
     },
     "loggers": {
@@ -60,7 +65,7 @@ app.add_middleware(
 
 app.include_router(anime)
 
-
 if __name__ == '__main__':
     from uvicorn import run
+
     run(app, host='0.0.0.0', port=60000, log_config=LOGGING_CONFIG)
