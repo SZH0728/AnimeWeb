@@ -121,11 +121,10 @@ def library(year: str = None, season: str = None, vote: int = 0):
     page: int = request.args.get('page', 1, type=int)
     per_page = 20
 
-    latest_date = get_latest_date()
-
     # 构建查询
     query = QueryService.base_query()
-    query = QueryService.apply_filters(query, year=norm_year, season=season, min_vote=vote, on_date=latest_date)
+    query = QueryService.apply_filters(query, year=norm_year, season=season, min_vote=vote)
+    query = QueryService.apply_score_latest_filter(query)
     query = QueryService.order_by_score_desc(query)
 
     rows, total_count, total_pages = PaginationService.paginate(query, page, per_page)
@@ -158,10 +157,9 @@ def search():
     if not 2  <= len(keyword) <= 64:
         abort(400, description='Invalid keyword parameter')
 
-    latest_date = get_latest_date()
-
     query = QueryService.base_query()
-    query = QueryService.apply_filters(query, keyword=keyword, on_date=latest_date)
+    query = QueryService.apply_filters(query, keyword=keyword)
+    query = QueryService.apply_score_latest_filter(query)
 
     rows, total_count, total_pages = PaginationService.paginate(query, page, per_page)
     anime = QueryService.to_brief_list(rows)

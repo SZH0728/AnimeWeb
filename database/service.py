@@ -10,7 +10,8 @@
 from typing import Iterable
 from datetime import datetime, timedelta
 
-from sqlalchemy import desc, and_
+from sqlalchemy import desc, and_, exists
+from sqlalchemy.orm import aliased
 
 from database.model import DB, Detail, Score, Web, NameMap
 from database.data import BriefInfo, DetailInfo, ScoreListItem, Pagination
@@ -128,6 +129,28 @@ class QueryService(object):
             query = query.filter(and_(*filters))
 
         return query
+
+    @staticmethod
+    def apply_score_latest_filter(query):
+        """
+        @brief 应用评分最新记录过滤
+        @details 对于每个符合条件的动画，只保留其最新的评分记录
+        @param query 查询对象
+        @return 添加过滤条件后的查询对象
+        """
+        # 为了在子查询中引用 Score 表，需要一个别名
+        score_alias = aliased(Score)
+
+        # 核心条件：不存在同一 detailId 且日期更大的记录
+        latest_cond = ~exists().where(
+            and_(
+                score_alias.detailId == Score.detailId,
+                score_alias.date > Score.date
+            )
+        )
+
+        # 直接在当前 query 上追加过滤
+        return query.filter(latest_cond)
 
     @staticmethod
     def order_by_score_desc(query):
