@@ -28,10 +28,10 @@
                     <label for="season">季度:</label>
                     <select name="season" id="season">
                         <option value="">全部</option>
+                        <option value="winter" {% if library_args.season == 'winter' %}selected{% endif %}>冬</option>
                         <option value="spring" {% if library_args.season == 'spring' %}selected{% endif %}>春</option>
                         <option value="summer" {% if library_args.season == 'summer' %}selected{% endif %}>夏</option>
                         <option value="autumn" {% if library_args.season == 'autumn' %}selected{% endif %}>秋</option>
-                        <option value="winter" {% if library_args.season == 'winter' %}selected{% endif %}>冬</option>
                     </select>
                 </div>
 
