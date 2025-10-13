@@ -47,11 +47,6 @@ def get_web_id_map() -> WebIDMap:
     return WebIDMap(Web.query.all())
 
 
-@cache.cached(timeout=5*60)
-def get_latest_date():
-    return DB.session.query(DB.func.max(Score.date)).scalar()
-
-
 @app.route('/')
 @cache.cached(timeout=300)
 def index():
@@ -60,7 +55,7 @@ def index():
     max_number = 20
 
     # 计算当天的评分日期
-    latest_date = get_latest_date()
+    latest_date = DB.session.query(DB.func.max(Score.date)).scalar()
     if not latest_date:
         # 无评分数据时直接返回空
         return render_template('index.html', hot_animes=[])
@@ -183,6 +178,7 @@ def detail(aid: int):
     # 使用QueryService进行基础三表联查
     query = QueryService.base_query()
     query = QueryService.apply_filters(query, aid=aid)
+    query = QueryService.apply_score_latest_filter(query)
     result = query.first()
 
     # 如果找不到结果，返回404
