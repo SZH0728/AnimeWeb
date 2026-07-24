@@ -69,7 +69,7 @@ def _build_search_statement() -> Select[tuple[object, ...]]:
     weighted_alias_similarity = func.coalesce(alias_similarity, 0) * 0.8
 
     relevance = func.greatest(name_similarity, translation_similarity, weighted_alias_similarity)
-    name_or_translation_match = func.greatest(name_similarity, translation_similarity) >= weighted_alias_similarity
+    name_or_translation_match = func.greatest(name_similarity, translation_similarity) >= 0.3
 
     matched_fields = func.array_remove(
         array(
