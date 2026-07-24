@@ -11,7 +11,6 @@
 from dataclasses import dataclass
 
 from backend.core.cache import InMemoryTtlCache
-from backend.core.config import config
 from backend.services.home import HomeService
 from backend.services.rankings import RankingService
 from backend.services.search import SearchService
