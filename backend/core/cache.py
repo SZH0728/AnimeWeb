@@ -53,12 +53,15 @@ class InMemoryTtlCache(object):
         async with self._lock:
             entry = self._entries.get(key)
 
-            if entry is not None and entry.expires_at > monotonic():
-                return cast(ResultT, entry.value)
+        if entry is not None and entry.expires_at > monotonic():
+            return cast(ResultT, entry.value)
 
-            value = await loader()
+        value = await loader()
+
+        async with self._lock:
             self._entries[key] = _CacheEntry(expires_at=monotonic() + ttl_seconds, value=value)
-            return value
+
+        return value
 
 
 if __name__ == '__main__':
