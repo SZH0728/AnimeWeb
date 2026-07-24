@@ -64,6 +64,9 @@ class SearchService(object):
         if not normalized_query:
             raise InvalidParameterError('q 去除首尾空白后不能为空')
 
+        if len(normalized_query) >= 128:
+            raise InvalidParameterError('q 长度过长')
+
         return normalized_query
 
     def _to_search_subject_list_item(self, row: SearchRow) -> SearchSubjectListItem:
