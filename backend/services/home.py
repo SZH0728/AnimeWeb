@@ -52,6 +52,7 @@ class HomeService(object):
     async def _load_home(self, session: AsyncSession) -> HomeResponse:
         """@brief 复用既有服务口径直接组装首页响应。"""
         seasons = await self._seasons.list_seasons(session, use_cache=False)
+
         top_score = await self._rankings.list_top_score_rankings(
             session=session,
             min_total=0,
@@ -59,16 +60,19 @@ class HomeService(object):
             page_size=self._ranking_preview_limit,
             use_cache=False,
         )
+
         most_rated = await self._rankings.list_most_rated_rankings(
             session=session,
             page=1,
             page_size=self._ranking_preview_limit,
             use_cache=False,
         )
+
         latest_season = None
 
         if seasons.items:
             season = seasons.items[0]
+
             subjects = await self._subjects.list_subjects(
                 session=session,
                 year=season.year,
@@ -77,6 +81,7 @@ class HomeService(object):
                 page=1,
                 page_size=self._latest_season_limit,
             )
+
             latest_season = LatestSeasonPreview(
                 year=season.year,
                 season=season.season,
