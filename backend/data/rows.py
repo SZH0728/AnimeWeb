@@ -11,6 +11,10 @@
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from typing import Literal
+
+
+SeasonName = Literal['winter', 'spring', 'summer', 'fall']
 
 
 @dataclass(frozen=True)
@@ -28,7 +32,7 @@ class SeasonSummaryRow(object):
     """@brief 表示一个已收录季度的汇总信息。"""
 
     year: int  # 播出年份
-    season: str  # 播出季度枚举值
+    season: SeasonName  # 播出季度枚举值
     subject_count: int  # 季度内条目数
     rated_subject_count: int  # 至少拥有一个评分快照的条目数
 
@@ -42,7 +46,7 @@ class SubjectListRow(object):
     translation: str | None  # 规范化后的中文译名
     air_date: date | None  # 首播日期
     year: int | None  # 播出年份
-    season: str | None  # 播出季度
+    season: SeasonName | None  # 播出季度
     tags: tuple[str, ...]  # 标签集合
     cover_url: str | None  # 规范化后的封面地址
     latest_rating: LatestRatingRow | None  # 最新评分快照
@@ -60,7 +64,7 @@ class SubjectDetailRow(object):
     summary: str | None  # 规范化后的剧情简介
     air_date: date | None  # 首播日期
     year: int | None  # 播出年份
-    season: str | None  # 播出季度
+    season: SeasonName | None  # 播出季度
     tags: tuple[str, ...]  # 标签集合
     cover_url: str | None  # 规范化后的封面地址
     latest_rating: LatestRatingRow | None  # 最新评分快照
