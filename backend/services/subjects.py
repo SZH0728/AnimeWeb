@@ -8,7 +8,6 @@
          直接构造 SQLAlchemy 查询或处理 HTTP 请求参数。
 """
 
-import re
 from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,16 +20,12 @@ from backend.data.queries.subjects import count_subjects, get_subject_detail, li
 from backend.data.rows import LatestRatingRow, RatingHistoryRow, SubjectDetailRow, SubjectListRow
 
 
-_INTERNAL_URL_PREFIX_PATTERN = re.compile(r'^/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$')
-
-
 class SubjectService(object):
     """@brief 提供季度条目、详情与评分历史的读取能力。"""
 
     def __init__(self) -> None:
         """@brief 创建统一处理封面 URL 的条目服务。"""
         self._image_strategy = config.get('images', 'strategy').strip()
-        self._internal_url_prefix = config.get('images', 'internal_url_prefix').strip()
 
     async def list_subjects(self, session: AsyncSession, year: int, season: SeasonName, min_total: int, page: int, page_size: int) -> SubjectListResponse:
         """
@@ -45,19 +40,11 @@ class SubjectService(object):
         """
         offset = calculate_offset(page=page, page_size=page_size)
         total = await count_subjects(session=session, year=year, season=season, min_total=min_total)
-        rows = await list_subjects(
-            session=session,
-            year=year,
-            season=season,
-            min_total=min_total,
-            limit=page_size,
-            offset=offset,
-        )
-        pagination = create_pagination(page=page, page_size=page_size, total=total)
+        rows = await list_subjects(session=session, year=year, season=season, min_total=min_total, limit=page_size, offset=offset)
 
         return SubjectListResponse(
             items=[self.to_subject_list_item(row) for row in rows],
-            pagination=pagination,
+            pagination=create_pagination(page=page, page_size=page_size, total=total),
             meta=SubjectListMeta(
                 year=year,
                 season=season,
@@ -149,7 +136,7 @@ class SubjectService(object):
         @return 外部封面地址、固定内部图片地址或 null。
         """
         if self._image_strategy == 'internal':
-            return f'{self._internal_url_prefix}/{bgm_id}'
+            return f'/images/{bgm_id}'
 
         return external_cover_url
 
