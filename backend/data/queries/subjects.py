@@ -9,40 +9,23 @@
 from sqlalchemy import ColumnElement, Integer, Select, bindparam, func, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.data.queries.common import RATINGS, SUBJECTS, build_subject_detail_columns, build_subject_list_columns, latest_rating_lateral, stable_latest_rating_order, to_rating_history_row, to_subject_detail_row, to_subject_list_row
-from backend.data.rows import RatingHistoryRow, SubjectDetailRow, SubjectListRow
+from backend.data.queries.common import RATINGS, SUBJECTS, build_subject_detail_columns, build_subject_list_columns, latest_rating_lateral, to_rating_history_row, to_subject_detail_row, to_subject_list_row
+from backend.data.rows import RatingHistoryRow, SubjectDetailRow, SubjectListPageRow
 
 
-async def count_subjects(session: AsyncSession, year: int, season: str, min_total: int) -> int:
+async def list_subject_page(session: AsyncSession, year: int, season: str, min_total: int, limit: int, offset: int) -> SubjectListPageRow:
     """
-    @brief 统计指定季度和评分人数筛选后的条目数量。
-    @param session 当前请求的只读数据库会话。
-    @param year 目标播出年份。
-    @param season 目标播出季度。
-    @param min_total 最新评分人数下限，0 表示不筛选。
-    @return 满足筛选条件的条目总数。
-    """
-    result = await session.execute(
-        _build_count_subjects_statement(),
-        {'year': year, 'season': season, 'min_total': min_total},
-    )
-    count = result.scalar_one()
-    return count
-
-
-async def list_subjects(session: AsyncSession, year: int, season: str, min_total: int, limit: int, offset: int) -> tuple[SubjectListRow, ...]:
-    """
-    @brief 分页读取指定季度的条目列表。
+    @brief 分页读取指定季度的条目及完整筛选结果总数。
     @param session 当前请求的只读数据库会话。
     @param year 目标播出年份。
     @param season 目标播出季度。
     @param min_total 最新评分人数下限，0 表示不筛选。
     @param limit 本次读取的最大条目数。
     @param offset 要跳过的条目数。
-    @return 按稳定最新评分排序的不可变条目列表行模型。
+    @return 同时包含总数和按稳定最新评分排序条目的分页行模型。
     """
     result = await session.execute(
-        _build_list_subjects_statement(),
+        _build_subject_list_page_statement(),
         {
             'year': year,
             'season': season,
@@ -51,7 +34,12 @@ async def list_subjects(session: AsyncSession, year: int, season: str, min_total
             'offset': offset,
         },
     )
-    return tuple(to_subject_list_row(record) for record in result.mappings())
+
+    records = tuple(result.mappings())
+    total = records[0]['total']
+    items = tuple(to_subject_list_row(record) for record in records if record['bgm_id'] is not None)
+
+    return SubjectListPageRow(total=total, items=items)
 
 
 async def get_subject_detail(session: AsyncSession, bgm_id: int) -> SubjectDetailRow | None:
@@ -92,26 +80,11 @@ async def list_rating_history(session: AsyncSession, bgm_id: int) -> tuple[Ratin
     return tuple(to_rating_history_row(record) for record in result.mappings())
 
 
-def _build_count_subjects_statement() -> Select[tuple[int]]:
+def _build_subject_list_page_statement() -> Select[tuple[object, ...]]:
     latest_rating = latest_rating_lateral()
     min_total: ColumnElement[int] = bindparam('min_total', type_=Integer())
 
-    return (
-        select(func.count(SUBJECTS.c.bgm_id))
-        .select_from(SUBJECTS.outerjoin(latest_rating, true()))
-        .where(
-            SUBJECTS.c.year == bindparam('year'),
-            SUBJECTS.c.season == bindparam('season'),
-            (min_total == 0) | (latest_rating.c.total >= min_total),
-        )
-    )
-
-
-def _build_list_subjects_statement() -> Select[tuple[object, ...]]:
-    latest_rating = latest_rating_lateral()
-    min_total: ColumnElement[int] = bindparam('min_total', type_=Integer())
-
-    return (
+    filtered_subjects = (
         select(*build_subject_list_columns(SUBJECTS, latest_rating))
         .select_from(SUBJECTS.outerjoin(latest_rating, true()))
         .where(
@@ -119,9 +92,32 @@ def _build_list_subjects_statement() -> Select[tuple[object, ...]]:
             SUBJECTS.c.season == bindparam('season'),
             (min_total == 0) | (latest_rating.c.total >= min_total),
         )
-        .order_by(*stable_latest_rating_order(latest_rating))
+        .cte('filtered_subjects')
+        .prefix_with('MATERIALIZED')
+    )
+
+    total = select(func.count().label('total')).select_from(filtered_subjects).cte('total')
+
+    page = (
+        select(filtered_subjects)
+        .order_by(
+            filtered_subjects.c.latest_rating_score.desc().nulls_last(),
+            filtered_subjects.c.latest_rating_total.desc(),
+            filtered_subjects.c.bgm_id.asc(),
+        )
         .limit(bindparam('limit'))
         .offset(bindparam('offset'))
+        .cte('page')
+    )
+
+    return (
+        select(total.c.total, page)
+        .select_from(total.outerjoin(page, true()))
+        .order_by(
+            page.c.latest_rating_score.desc().nulls_last(),
+            page.c.latest_rating_total.desc(),
+            page.c.bgm_id.asc(),
+        )
     )
 
 

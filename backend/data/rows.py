@@ -53,6 +53,14 @@ class SubjectListRow(object):
 
 
 @dataclass(frozen=True)
+class SubjectListPageRow(object):
+    """@brief 表示季度目录分页查询的总数与当前页条目。"""
+
+    total: int  # 当前筛选条件下的总条目数
+    items: tuple[SubjectListRow, ...]  # 当前页的不可变条目列表
+
+
+@dataclass(frozen=True)
 class SubjectDetailRow(object):
     """@brief 表示条目详情查询所需的完整公开字段。"""
 

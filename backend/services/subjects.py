@@ -16,7 +16,7 @@ from backend.core.config import config
 from backend.api.pagination import calculate_offset, create_pagination
 from backend.api.schemas import DateRange, LatestRating, RatingHistoryPoint, RatingHistoryResponse, SeasonName, SubjectDetail, SubjectListItem, SubjectListMeta, SubjectListResponse
 from backend.core.errors import SubjectNotFoundError
-from backend.data.queries.subjects import count_subjects, get_subject_detail, list_rating_history, list_subjects, subject_exists
+from backend.data.queries.subjects import get_subject_detail, list_rating_history, list_subject_page, subject_exists
 from backend.data.rows import LatestRatingRow, RatingHistoryRow, SubjectDetailRow, SubjectListRow
 
 
@@ -39,12 +39,11 @@ class SubjectService(object):
         @return 包含固定排序说明的季度目录分页响应。
         """
         offset = calculate_offset(page=page, page_size=page_size)
-        total = await count_subjects(session=session, year=year, season=season, min_total=min_total)
-        rows = await list_subjects(session=session, year=year, season=season, min_total=min_total, limit=page_size, offset=offset)
+        page_result = await list_subject_page(session=session, year=year, season=season, min_total=min_total, limit=page_size, offset=offset)
 
         return SubjectListResponse(
-            items=[self.to_subject_list_item(row) for row in rows],
-            pagination=create_pagination(page=page, page_size=page_size, total=total),
+            items=[self.to_subject_list_item(row) for row in page_result.items],
+            pagination=create_pagination(page=page, page_size=page_size, total=page_result.total),
             meta=SubjectListMeta(
                 year=year,
                 season=season,
