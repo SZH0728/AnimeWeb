@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.core.config import config
 from backend.api.dependencies import provide_database_session
 from backend.data.queries.images import get_cover_image
 
@@ -38,6 +39,9 @@ async def get_image(
     @param bgm_id Bangumi 公开条目 ID。
     @return 识别出的图片二进制响应，或无响应体的 404。
     """
+    if config.get('images', 'strategy').strip() == 'external':
+        return Response(status_code=404)
+
     cover_image_row = await get_cover_image(session=session, bgm_id=bgm_id)
 
     if cover_image_row is None or cover_image_row.cover_image is None:
