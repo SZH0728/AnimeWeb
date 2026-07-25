@@ -267,3 +267,4 @@ backups
 /.codemoss
 /docs
 *.ini
+*.test.*
