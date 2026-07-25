@@ -21,7 +21,7 @@ withDefaults(
     <template v-else>
       <dl
         :class="
-          compact ? 'flex flex-wrap gap-x-3 gap-y-1' : 'grid grid-cols-1 gap-1 sm:grid-cols-3'
+          compact ? 'flex flex-wrap gap-x-3 gap-y-1' : 'grid grid-cols-2 gap-1 sm:grid-cols-3'
         "
       >
         <div>
@@ -32,7 +32,7 @@ withDefaults(
           <dt class="text-sm opacity-70">评价人数</dt>
           <dd class="font-semibold">{{ formatNumber(rating.total) }}</dd>
         </div>
-        <div>
+        <div :class="{ 'col-span-2 sm:col-span-1': !compact }">
           <dt class="text-sm opacity-70">Bangumi 综合排名</dt>
           <dd class="font-semibold">{{ formatOptionalNumber(rating.rank) }}</dd>
         </div>
