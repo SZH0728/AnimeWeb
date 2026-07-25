@@ -20,12 +20,18 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="alert alert-error alert-vertical sm:alert-horizontal" role="alert">
-    <div>
+  <section class="alert alert-error alert-vertical sm:alert-horizontal items-center" role="alert">
+    <div class="flex-1 text-left">
       <h2 class="font-semibold">{{ title }}</h2>
       <p class="text-sm">{{ message }}</p>
     </div>
-    <button v-if="canRetry" class="btn btn-sm" type="button" @click="emit('retry-requested')">
+
+    <button
+      v-if="canRetry"
+      class="btn btn-sm w-full sm:w-auto sm:justify-self-end"
+      type="button"
+      @click="emit('retry-requested')"
+    >
       {{ retryLabel }}
     </button>
   </section>
