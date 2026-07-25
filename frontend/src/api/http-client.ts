@@ -18,7 +18,11 @@ async function parseJson(response: Response): Promise<unknown> {
   }
 }
 
-export async function getJson<T>(path: string, successSchema: z.ZodType<T>, signal?: AbortSignal): Promise<T> {
+export async function getJson<T>(
+  path: string,
+  successSchema: z.ZodType<T>,
+  signal?: AbortSignal,
+): Promise<T> {
   let response: Response;
 
   try {
