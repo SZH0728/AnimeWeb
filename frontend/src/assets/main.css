@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+
+@plugin "daisyui" {
+  themes: animeweb --default;
+  logs: false;
+}
+
+@plugin "daisyui/theme" {
+  name: 'animeweb';
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: oklch(98% 0.008 250);
+  --color-base-200: oklch(95% 0.014 250);
+  --color-base-300: oklch(91% 0.02 250);
+  --color-base-content: oklch(25% 0.03 255);
+  --color-primary: oklch(57% 0.2 255);
+  --color-primary-content: oklch(99% 0.004 250);
+  --color-secondary: oklch(66% 0.16 205);
+  --color-secondary-content: oklch(99% 0.004 205);
+  --color-accent: oklch(70% 0.17 75);
+  --color-accent-content: oklch(25% 0.04 75);
+  --color-neutral: oklch(40% 0.03 255);
+  --color-neutral-content: oklch(98% 0.008 250);
+  --color-info: oklch(65% 0.15 235);
+  --color-info-content: oklch(99% 0.004 235);
+  --color-success: oklch(64% 0.16 150);
+  --color-success-content: oklch(99% 0.004 150);
+  --color-warning: oklch(78% 0.16 85);
+  --color-warning-content: oklch(27% 0.04 85);
+  --color-error: oklch(61% 0.19 25);
+  --color-error-content: oklch(99% 0.004 25);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@theme {
+  --spacing-page: clamp(1rem, 4vw, 2rem);
+  --spacing-section: clamp(3rem, 8vw, 6rem);
+  --radius-surface: 1rem;
+  --shadow-surface: 0 16px 40px oklch(25% 0.03 255 / 8%);
+}
+
+:root {
+  color-scheme: light;
+  font-family: Inter, 'Noto Sans SC', system-ui, sans-serif;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--color-base-100);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-base-100);
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.app-container {
+  width: min(100% - (var(--spacing-page) * 2), 72rem);
+  margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
