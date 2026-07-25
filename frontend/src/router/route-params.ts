@@ -29,7 +29,10 @@ export type ParsedRoute<T> =
 
 export type ParsedSeasonCatalogRoute =
   | ParsedRoute<SubjectListRequest>
-  | { readonly status: 'selection-required'; readonly value: Readonly<Pick<SubjectListRequest, 'minTotal' | 'page' | 'pageSize'>> };
+  | {
+      readonly status: 'selection-required';
+      readonly value: Readonly<Pick<SubjectListRequest, 'minTotal' | 'page' | 'pageSize'>>;
+    };
 
 function getScalarValue(query: RawRouteValues, key: string): string | undefined {
   const value = query[key];
@@ -54,7 +57,9 @@ function parseInteger(value: string, minimum: number, maximum: number): number |
   return numberValue;
 }
 
-function parsePagination(query: RawRouteValues): ParsedRoute<Readonly<{ page: number; pageSize: number }>> {
+function parsePagination(
+  query: RawRouteValues,
+): ParsedRoute<Readonly<{ page: number; pageSize: number }>> {
   if (hasInvalidScalarValue(query, 'page')) {
     return { status: 'invalid', reason: 'invalid-page' };
   }
@@ -64,7 +69,10 @@ function parsePagination(query: RawRouteValues): ParsedRoute<Readonly<{ page: nu
 
   const rawPage = getScalarValue(query, 'page');
   const rawPageSize = getScalarValue(query, 'page_size');
-  const page = rawPage === undefined ? appConfig.defaultPage : parseInteger(rawPage, 1, Number.MAX_SAFE_INTEGER);
+  const page =
+    rawPage === undefined
+      ? appConfig.defaultPage
+      : parseInteger(rawPage, 1, Number.MAX_SAFE_INTEGER);
   const pageSize =
     rawPageSize === undefined ? appConfig.defaultPageSize : parseInteger(rawPageSize, 1, 100);
 
@@ -85,7 +93,9 @@ function parseMinTotal(query: RawRouteValues): ParsedRoute<number> {
 
   const rawMinTotal = getScalarValue(query, 'min_total');
   const minTotal =
-    rawMinTotal === undefined ? appConfig.defaultMinTotal : parseInteger(rawMinTotal, 0, Number.MAX_SAFE_INTEGER);
+    rawMinTotal === undefined
+      ? appConfig.defaultMinTotal
+      : parseInteger(rawMinTotal, 0, Number.MAX_SAFE_INTEGER);
 
   return minTotal === undefined
     ? { status: 'invalid', reason: 'invalid-min-total' }
@@ -113,7 +123,10 @@ export function parseSeasonCatalogRoute(query: RawRouteValues): ParsedSeasonCata
   const rawYear = getScalarValue(query, 'year');
   const rawSeason = getScalarValue(query, 'season');
   if (rawYear === undefined && rawSeason === undefined) {
-    return { status: 'selection-required', value: { ...pagination.value, minTotal: minTotal.value } };
+    return {
+      status: 'selection-required',
+      value: { ...pagination.value, minTotal: minTotal.value },
+    };
   }
   if (rawYear === undefined || rawSeason === undefined) {
     return { status: 'invalid', reason: 'incomplete-season-selection' };
@@ -187,7 +200,8 @@ export function parsePositiveBgmId(params: RawRouteValues): ParsedRoute<BgmId> {
   }
 
   const rawBgmId = getScalarValue(params, 'bgmId');
-  const bgmId = rawBgmId === undefined ? undefined : parseInteger(rawBgmId, 1, Number.MAX_SAFE_INTEGER);
+  const bgmId =
+    rawBgmId === undefined ? undefined : parseInteger(rawBgmId, 1, Number.MAX_SAFE_INTEGER);
   return bgmId === undefined
     ? { status: 'invalid', reason: 'invalid-bgm-id' }
     : { status: 'valid', value: bgmId };
