@@ -9,7 +9,7 @@ import type {
   TopScoreRankingRequest,
 } from '@/types/api-requests';
 
-export type RawRouteValue = string | null | readonly string[] | undefined;
+export type RawRouteValue = string | null | readonly (string | null)[] | undefined;
 export type RawRouteValues = Readonly<Record<string, RawRouteValue>>;
 
 export type RouteParameterError =
