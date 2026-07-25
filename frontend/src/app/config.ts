@@ -30,7 +30,11 @@ function createIntegerSchema(variableName: string, minimum: number, maximum: num
 
 const defaultPageSchema = createIntegerSchema('VITE_DEFAULT_PAGE', 1, Number.MAX_SAFE_INTEGER);
 const defaultPageSizeSchema = createIntegerSchema('VITE_DEFAULT_PAGE_SIZE', 1, 100);
-const defaultMinTotalSchema = createIntegerSchema('VITE_DEFAULT_MIN_TOTAL', 0, Number.MAX_SAFE_INTEGER);
+const defaultMinTotalSchema = createIntegerSchema(
+  'VITE_DEFAULT_MIN_TOTAL',
+  0,
+  Number.MAX_SAFE_INTEGER,
+);
 
 function normalizeApiBaseUrl(value: string): string {
   return value.replace(/\/+$/, '') || '/';
