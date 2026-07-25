@@ -22,7 +22,11 @@ export const router = createRouter({
       name: 'seasons',
       component: (): Promise<unknown> => import('@/views/SeasonCatalogView.vue'),
     },
-    { path: '/search', name: 'search', component: (): Promise<unknown> => import('@/views/SearchView.vue') },
+    {
+      path: '/search',
+      name: 'search',
+      component: (): Promise<unknown> => import('@/views/SearchView.vue'),
+    },
     {
       path: '/rankings/top-score',
       name: 'ranking-top-score',
