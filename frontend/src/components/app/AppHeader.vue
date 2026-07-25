@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@/router/route-params';
+import { appConfig } from '@/app/config';
 import { buildSearchQuery } from '@/utils/query-params';
 
 import GlobalSearchForm from './GlobalSearchForm.vue';
@@ -30,7 +30,13 @@ async function handleSearchSubmitted(keyword: string): Promise<void> {
   await router.push({
     name: 'search',
     query: Object.fromEntries(
-      new URLSearchParams(buildSearchQuery({ query: keyword, page: DEFAULT_PAGE, pageSize: DEFAULT_PAGE_SIZE })),
+      new URLSearchParams(
+        buildSearchQuery({
+          query: keyword,
+          page: appConfig.defaultPage,
+          pageSize: appConfig.defaultPageSize,
+        }),
+      ),
     ),
   });
 }

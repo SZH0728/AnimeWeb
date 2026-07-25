@@ -1,3 +1,4 @@
+import { appConfig } from '@/app/config';
 import type { SeasonName } from '@/api/api-contract';
 import type {
   BgmId,
@@ -7,10 +8,6 @@ import type {
   SubjectListRequest,
   TopScoreRankingRequest,
 } from '@/types/api-requests';
-
-export const DEFAULT_PAGE = 1;
-export const DEFAULT_PAGE_SIZE = 20;
-export const DEFAULT_MIN_TOTAL = 0;
 
 export type RawRouteValue = string | null | readonly string[] | undefined;
 export type RawRouteValues = Readonly<Record<string, RawRouteValue>>;
@@ -67,9 +64,9 @@ function parsePagination(query: RawRouteValues): ParsedRoute<Readonly<{ page: nu
 
   const rawPage = getScalarValue(query, 'page');
   const rawPageSize = getScalarValue(query, 'page_size');
-  const page = rawPage === undefined ? DEFAULT_PAGE : parseInteger(rawPage, 1, Number.MAX_SAFE_INTEGER);
+  const page = rawPage === undefined ? appConfig.defaultPage : parseInteger(rawPage, 1, Number.MAX_SAFE_INTEGER);
   const pageSize =
-    rawPageSize === undefined ? DEFAULT_PAGE_SIZE : parseInteger(rawPageSize, 1, 100);
+    rawPageSize === undefined ? appConfig.defaultPageSize : parseInteger(rawPageSize, 1, 100);
 
   if (page === undefined) {
     return { status: 'invalid', reason: 'invalid-page' };
@@ -88,7 +85,7 @@ function parseMinTotal(query: RawRouteValues): ParsedRoute<number> {
 
   const rawMinTotal = getScalarValue(query, 'min_total');
   const minTotal =
-    rawMinTotal === undefined ? DEFAULT_MIN_TOTAL : parseInteger(rawMinTotal, 0, Number.MAX_SAFE_INTEGER);
+    rawMinTotal === undefined ? appConfig.defaultMinTotal : parseInteger(rawMinTotal, 0, Number.MAX_SAFE_INTEGER);
 
   return minTotal === undefined
     ? { status: 'invalid', reason: 'invalid-min-total' }

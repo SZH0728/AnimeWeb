@@ -1,3 +1,4 @@
+import { appConfig } from '@/app/config';
 import type {
   MostRatedRankingRequest,
   RankingType,
@@ -6,16 +7,14 @@ import type {
   TopScoreRankingRequest,
 } from '@/types/api-requests';
 
-import { DEFAULT_MIN_TOTAL, DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@/router/route-params';
-
 function appendPagination(
   params: URLSearchParams,
   request: { readonly page: number; readonly pageSize: number },
 ): void {
-  if (request.page !== DEFAULT_PAGE) {
+  if (request.page !== appConfig.defaultPage) {
     params.set('page', String(request.page));
   }
-  if (request.pageSize !== DEFAULT_PAGE_SIZE) {
+  if (request.pageSize !== appConfig.defaultPageSize) {
     params.set('page_size', String(request.pageSize));
   }
 }
@@ -24,7 +23,7 @@ export function buildSeasonQuery(request: SubjectListRequest): string {
   const params = new URLSearchParams();
   params.set('year', String(request.year));
   params.set('season', request.season);
-  if (request.minTotal !== DEFAULT_MIN_TOTAL) {
+  if (request.minTotal !== appConfig.defaultMinTotal) {
     params.set('min_total', String(request.minTotal));
   }
   appendPagination(params, request);
@@ -45,7 +44,7 @@ export function buildRankingQuery(
   const params = new URLSearchParams();
   if (rankingType === 'top_score') {
     const topScoreRequest = request as TopScoreRankingRequest;
-    if (topScoreRequest.minTotal !== DEFAULT_MIN_TOTAL) {
+    if (topScoreRequest.minTotal !== appConfig.defaultMinTotal) {
       params.set('min_total', String(topScoreRequest.minTotal));
     }
   }
