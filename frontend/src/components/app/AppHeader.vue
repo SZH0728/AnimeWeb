@@ -43,11 +43,15 @@ async function handleSearchSubmitted(keyword: string): Promise<void> {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-transparent bg-white shadow-[0_3px_8px_-5px_rgb(148_163_184_/_0.75)]">
+  <header
+    class="sticky top-0 z-50 border-b border-transparent bg-white shadow-[0_3px_8px_-5px_rgb(148_163_184_/_0.75)]"
+  >
     <div class="app-container py-3">
       <div class="navbar min-h-0 gap-3 p-0">
         <div class="navbar-start">
-          <RouterLink class="text-2xl font-bold tracking-tight text-primary" to="/">AnimeWeb</RouterLink>
+          <RouterLink class="text-primary text-2xl font-bold tracking-tight" to="/"
+            >AnimeWeb</RouterLink
+          >
         </div>
         <nav aria-label="主导航" class="navbar-center hidden lg:flex">
           <ul class="menu menu-horizontal gap-1 p-0">
@@ -80,13 +84,17 @@ async function handleSearchSubmitted(keyword: string): Promise<void> {
         v-if="isMenuOpen"
         id="mobile-navigation"
         aria-label="移动端主导航"
-        class="mt-3 border-base-300 border-t pt-3 lg:hidden"
+        class="border-base-300 mt-3 border-t pt-3 lg:hidden"
       >
         <ul class="menu menu-vertical w-full p-0">
           <li><RouterLink to="/" @click="handleNavigation">首页</RouterLink></li>
           <li><RouterLink to="/seasons" @click="handleNavigation">季度目录</RouterLink></li>
-          <li><RouterLink to="/rankings/top-score" @click="handleNavigation">高分榜</RouterLink></li>
-          <li><RouterLink to="/rankings/most-rated" @click="handleNavigation">最多人评价</RouterLink></li>
+          <li>
+            <RouterLink to="/rankings/top-score" @click="handleNavigation">高分榜</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/rankings/most-rated" @click="handleNavigation">最多人评价</RouterLink>
+          </li>
         </ul>
       </nav>
     </div>
