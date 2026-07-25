@@ -8,6 +8,7 @@ export interface RequestState<T, TInput> {
   readonly error: DeepReadonly<Ref<Error | null>>;
   load(input: TInput): Promise<void>;
   retry(): Promise<void>;
+  cancel(): void;
 }
 
 export function useRequestState<T, TInput>(
@@ -53,8 +54,15 @@ export function useRequestState<T, TInput>(
     }
   }
 
-  onScopeDispose((): void => {
+  function cancel(): void {
     activeController?.abort();
+    activeController = null;
+    requestId += 1;
+    loading.value = false;
+  }
+
+  onScopeDispose((): void => {
+    cancel();
   });
 
   return {
@@ -63,5 +71,6 @@ export function useRequestState<T, TInput>(
     error: readonly(error),
     load,
     retry,
+    cancel,
   };
 }
