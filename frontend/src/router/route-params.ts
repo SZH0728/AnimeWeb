@@ -34,6 +34,10 @@ export type ParsedSeasonCatalogRoute =
       readonly value: Readonly<Pick<SubjectListRequest, 'minTotal' | 'page' | 'pageSize'>>;
     };
 
+function isSeasonName(value: string): value is SeasonName {
+  return value === 'winter' || value === 'spring' || value === 'summer' || value === 'fall';
+}
+
 function getScalarValue(query: RawRouteValues, key: string): string | undefined {
   const value = query[key];
   return typeof value === 'string' ? value : undefined;
@@ -137,14 +141,13 @@ export function parseSeasonCatalogRoute(query: RawRouteValues): ParsedSeasonCata
     return { status: 'invalid', reason: 'invalid-year' };
   }
 
-  const seasons: readonly SeasonName[] = ['winter', 'spring', 'summer', 'fall'];
-  if (!seasons.includes(rawSeason as SeasonName)) {
+  if (!isSeasonName(rawSeason)) {
     return { status: 'invalid', reason: 'invalid-season' };
   }
 
   return {
     status: 'valid',
-    value: { year, season: rawSeason as SeasonName, minTotal: minTotal.value, ...pagination.value },
+    value: { year, season: rawSeason, minTotal: minTotal.value, ...pagination.value },
   };
 }
 
