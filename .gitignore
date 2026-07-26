@@ -263,6 +263,7 @@ CLAUDE.md
 AGENTS.md
 test
 backups
+/.claude
 /.ai
 /.codemoss
 /docs
