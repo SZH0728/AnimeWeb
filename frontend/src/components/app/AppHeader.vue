@@ -44,7 +44,7 @@ async function handleSearchSubmitted(keyword: string): Promise<void> {
 
 <template>
   <header
-    class="sticky top-0 z-50 border-b border-transparent bg-base-100 shadow-[0_3px_8px_-5px_rgb(148_163_184/0.75)]"
+    class="sticky top-0 z-50 border-b border-transparent bg-white shadow-[0_3px_8px_-5px_rgb(148_163_184/0.75)]"
   >
     <div class="app-container py-3">
       <div class="navbar min-h-0 gap-3 p-0">
