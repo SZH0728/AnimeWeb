@@ -51,8 +51,10 @@ function handleBlur(): void {
   requestPage(target);
 }
 
-function handleEnter(e: KeyboardEvent): void {
-  (e.target as HTMLInputElement).blur();
+function handleEnter(event: KeyboardEvent): void {
+  if (event.target instanceof HTMLInputElement) {
+    event.target.blur();
+  }
 }
 </script>
 
