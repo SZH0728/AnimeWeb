@@ -40,8 +40,13 @@ onMounted((): void => {
 </script>
 
 <template>
-  <main class="app-container space-y-10 py-10 sm:py-16">
-    <LoadingState v-if="homeRequest.loading.value" label="正在加载首页内容" variant="list" />
+  <div class="app-container space-y-10 py-10 sm:py-16">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">AnimeWeb 动画数据</h1>
+      <p class="text-base-content/70">基于作品最新评分快照整理的季度目录与榜单预览。</p>
+    </div>
+
+    <LoadingState v-if="homeRequest.loading.value" label="正在加载首页内容" variant="home" />
 
     <ErrorState
       v-else-if="homeRequest.error.value"
@@ -122,5 +127,5 @@ onMounted((): void => {
         </section>
       </div>
     </div>
-  </main>
+  </div>
 </template>
