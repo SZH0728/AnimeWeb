@@ -11,7 +11,10 @@ import PaginationNav from '@/components/navigation/PaginationNav.vue';
 import { useRankingRequest } from '@/composables/use-ranking-request';
 import { parseRankingRoute } from '@/router/route-params';
 import type { MostRatedRankingRequest, TopScoreRankingRequest } from '@/types/api-requests';
-import { buildRankingQuery } from '@/utils/query-params';
+import {
+  buildMostRatedRankingQuery,
+  buildTopScoreRankingQuery,
+} from '@/utils/query-params';
 import RankingListItem from '@/components/ranking/RankingListItem.vue';
 
 const route = useRoute();
@@ -39,7 +42,12 @@ function toRouteQuery(
     return {};
   }
 
-  return Object.fromEntries(new URLSearchParams(buildRankingQuery(rankingConfig.type, request)));
+  const query =
+    'minTotal' in request
+      ? buildTopScoreRankingQuery(request)
+      : buildMostRatedRankingQuery(request);
+
+  return Object.fromEntries(new URLSearchParams(query));
 }
 
 function navigateToRanking(request: TopScoreRankingRequest | MostRatedRankingRequest): void {

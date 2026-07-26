@@ -1,11 +1,14 @@
 import { appConfig } from '@/app/config';
 import type {
   MostRatedRankingRequest,
-  RankingType,
   SearchRequest,
   SubjectListRequest,
   TopScoreRankingRequest,
 } from '@/types/api-requests';
+
+export type RankingQueryRequest =
+  | { readonly type: 'top_score'; readonly request: TopScoreRankingRequest }
+  | { readonly type: 'most_rated'; readonly request: MostRatedRankingRequest };
 
 function appendPagination(
   params: URLSearchParams,
@@ -37,16 +40,10 @@ export function buildSearchQuery(request: SearchRequest): string {
   return params.toString();
 }
 
-export function buildRankingQuery(
-  rankingType: RankingType,
-  request: TopScoreRankingRequest | MostRatedRankingRequest,
-): string {
+export function buildRankingQuery({ type, request }: RankingQueryRequest): string {
   const params = new URLSearchParams();
-  if (rankingType === 'top_score') {
-    const topScoreRequest = request as TopScoreRankingRequest;
-    if (topScoreRequest.minTotal !== appConfig.defaultMinTotal) {
-      params.set('min_total', String(topScoreRequest.minTotal));
-    }
+  if (type === 'top_score' && request.minTotal !== appConfig.defaultMinTotal) {
+    params.set('min_total', String(request.minTotal));
   }
   appendPagination(params, request);
   return params.toString();
@@ -55,9 +52,9 @@ export function buildRankingQuery(
 export const buildSubjectListQuery = buildSeasonQuery;
 
 export function buildTopScoreRankingQuery(request: TopScoreRankingRequest): string {
-  return buildRankingQuery('top_score', request);
+  return buildRankingQuery({ type: 'top_score', request });
 }
 
 export function buildMostRatedRankingQuery(request: MostRatedRankingRequest): string {
-  return buildRankingQuery('most_rated', request);
+  return buildRankingQuery({ type: 'most_rated', request });
 }
