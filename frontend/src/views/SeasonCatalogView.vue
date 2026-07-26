@@ -15,6 +15,7 @@ import { useSeasonsRequest } from '@/composables/use-seasons-request';
 import { useSubjectListRequest } from '@/composables/use-subject-list-request';
 import { parseSeasonCatalogRoute } from '@/router/route-params';
 import type { SubjectListRequest } from '@/types/api-requests';
+import { formatSeason } from '@/utils/formatters';
 import { buildSeasonQuery } from '@/utils/query-params';
 
 const route = useRoute();
@@ -25,11 +26,17 @@ const subjectsRequest = useSubjectListRequest();
 const parsedRoute = computed(() => parseSeasonCatalogRoute(route.query));
 const availableSeasons = computed(() => seasonsRequest.data.value?.items ?? []);
 const hasAvailableSeasons = computed(() => availableSeasons.value.length > 0);
+const hasAvailableRouteSelection = computed(() => {
+  const routeState = parsedRoute.value;
+  return (
+    routeState.status === 'valid' &&
+    availableSeasons.value.some(
+      (season) => season.year === routeState.value.year && season.season === routeState.value.season,
+    )
+  );
+});
 const canUseCatalogControls = computed(
-  () =>
-    parsedRoute.value.status === 'valid' &&
-    hasAvailableSeasons.value &&
-    !seasonsRequest.loading.value,
+  () => hasAvailableRouteSelection.value && !seasonsRequest.loading.value,
 );
 
 function toRouteQuery(request: SubjectListRequest): Record<string, string> {
@@ -118,6 +125,11 @@ watch(
       return;
     }
 
+    if (!hasAvailableRouteSelection.value) {
+      subjectsRequest.cancel();
+      return;
+    }
+
     void subjectsRequest.load(routeState.value);
   },
   { immediate: true },
@@ -129,7 +141,12 @@ onMounted((): void => {
 </script>
 
 <template>
-  <main class="app-container space-y-8 py-10 sm:py-16">
+  <div class="app-container space-y-8 py-10 sm:py-16">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">季度目录</h1>
+      <p class="text-base-content/70">按季度和最低评价人数浏览作品评分快照。</p>
+    </div>
+
     <ErrorState
       v-if="parsedRoute.status === 'invalid'"
       :can-retry="false"
@@ -156,6 +173,13 @@ onMounted((): void => {
       title="暂无可选季度"
     />
 
+    <ErrorState
+      v-else-if="parsedRoute.status === 'valid' && !hasAvailableRouteSelection"
+      :can-retry="false"
+      message="该季度当前不可用，请从可选季度中重新选择。"
+      title="季度不可用"
+    />
+
     <template v-else-if="parsedRoute.status === 'valid'">
       <SeasonCatalogFilter
         :available-seasons="availableSeasons"
@@ -168,11 +192,10 @@ onMounted((): void => {
 
       <section aria-labelledby="season-subjects-title" class="space-y-5">
         <div>
-          <h2 id="season-subjects-title" class="text-2xl font-bold tracking-tight">季度目录</h2>
           <p v-if="subjectsRequest.data.value" class="text-base-content/70 mt-1 text-sm">
             {{ subjectsRequest.data.value.meta.year }} 年{{
-              subjectsRequest.data.value.meta.season
-            }}，共 {{ subjectsRequest.data.value.pagination.total }} 项结果。
+              formatSeason(subjectsRequest.data.value.meta.season)
+            }}，共 {{ subjectsRequest.data.value.pagination.total }} 项结果
           </p>
         </div>
 
@@ -208,5 +231,5 @@ onMounted((): void => {
         </template>
       </section>
     </template>
-  </main>
+  </div>
 </template>
