@@ -41,6 +41,8 @@ defineProps<{
               </span>
             </div>
 
+            <slot name="metadata" />
+
             <p v-if="subject.translation" class="text-sm wrap-break-word opacity-75">
               {{ subject.translation }}
             </p>
