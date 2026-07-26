@@ -21,7 +21,7 @@ function handleImageError(): void {
 </script>
 
 <template>
-  <div class="rounded-box bg-base-200 aspect-[2/3] overflow-hidden">
+  <div class="rounded-box bg-base-200 aspect-2/3 overflow-hidden">
     <img
       v-if="coverUrl && !hasLoadError"
       :alt="alt"
