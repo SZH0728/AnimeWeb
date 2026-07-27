@@ -71,10 +71,10 @@ async def subject_exists(session: AsyncSession, bgm_id: int) -> bool:
 
 async def list_rating_history(session: AsyncSession, bgm_id: int) -> tuple[RatingHistoryRow, ...]:
     """
-    @brief 读取单条目的全部评分历史。
+    @brief 读取单条目的评分历史快照。
     @param session 当前请求的只读数据库会话。
     @param bgm_id Bangumi 公开条目 ID。
-    @return 按快照日期正序排列的不可变评分历史行模型。
+    @return 按快照日期正序排列的不可变评分历史行模型；超过 30 条时按间隔采样且保留最新快照。
     """
     result = await session.execute(_build_rating_history_statement(), {'bgm_id': bgm_id})
     return tuple(to_rating_history_row(record) for record in result.mappings())
@@ -135,15 +135,32 @@ def _build_subject_exists_statement() -> Select[tuple[int]]:
 
 
 def _build_rating_history_statement() -> Select[tuple[object, ...]]:
-    return (
+    annotated_history = (
         select(
             RATINGS.c.date.label('date'),
             RATINGS.c.score.label('score'),
             RATINGS.c.total.label('total'),
             RATINGS.c.rank.label('rank'),
+            func.row_number().over(order_by=RATINGS.c.date.asc()).label('row_number'),
+            func.count().over().label('total_rows'),
         )
         .where(RATINGS.c.bgm_id == bindparam('bgm_id'))
-        .order_by(RATINGS.c.date.asc())
+        .cte('annotated_history')
+    )
+    sampling_stride = (annotated_history.c.total_rows + 29) // 30
+
+    return (
+        select(
+            annotated_history.c.date,
+            annotated_history.c.score,
+            annotated_history.c.total,
+            annotated_history.c.rank,
+        )
+        .where(
+            (annotated_history.c.total_rows <= 30)
+            | ((annotated_history.c.total_rows - annotated_history.c.row_number) % sampling_stride == 0)
+        )
+        .order_by(annotated_history.c.date.asc())
     )
 
 if __name__ == '__main__':

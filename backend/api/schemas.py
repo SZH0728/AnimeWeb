@@ -198,18 +198,18 @@ class MostRatedRankingResponse(PaginatedResponse[RankingItem]):
 
 
 class DateRange(ApiSchema):
-    """@brief 表示已有评分历史的首末采集日期。"""
+    """@brief 表示本次返回评分历史的首末采集日期。"""
 
-    from_date: date = Field(serialization_alias='from', validation_alias='from')  # 历史首个快照日期
-    to_date: date = Field(serialization_alias='to', validation_alias='to')  # 历史最后一个快照日期
+    from_date: date = Field(serialization_alias='from', validation_alias='from')  # 返回历史首个快照日期
+    to_date: date = Field(serialization_alias='to', validation_alias='to')  # 返回历史最后一个快照日期
 
 
 class RatingHistoryResponse(ApiSchema):
-    """@brief 表示单个条目的完整评分历史响应。"""
+    """@brief 表示单个条目的评分历史快照响应。"""
 
     bgm_id: int  # Bangumi 公开条目 ID
-    available_range: DateRange | None  # 已有快照的日期范围；无历史时为 null
-    items: list[RatingHistoryPoint] = Field(default_factory=list)  # 按日期升序的全部评分历史
+    available_range: DateRange | None  # 返回快照的日期范围；无历史时为 null
+    items: list[RatingHistoryPoint] = Field(default_factory=list)  # 按日期升序的评分历史快照；长历史可能为采样结果
 
 
 class ErrorDetail(ApiSchema):

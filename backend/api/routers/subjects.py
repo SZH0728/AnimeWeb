@@ -58,11 +58,11 @@ async def get_rating_history(
     bgm_id: Annotated[int, Path(gt=0, description='正整数 Bangumi 条目 ID')],
 ) -> RatingHistoryResponse:
     """
-    @brief 返回指定条目的全部评分历史。
+    @brief 返回指定条目的评分历史快照。
     @param session 当前请求的只读数据库会话。
     @param services 当前应用共享的业务服务容器。
     @param bgm_id Bangumi 公开条目 ID。
-    @return 按采集日期升序排列的评分历史响应。
+    @return 按采集日期升序排列的评分历史响应；超过 30 条时按间隔采样且保留最新快照。
     """
     return await services.subjects.get_rating_history(session=session, bgm_id=bgm_id)
 

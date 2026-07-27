@@ -154,13 +154,13 @@ Vite 默认通过 `/api` 将 API 请求代理到 `http://localhost:8000`。终�
 | `GET /api/rankings/top-score` | 最高评分榜；可选 `min_total` 和分页参数 |
 | `GET /api/rankings/most-rated` | 最多人评价榜；可选分页参数 |
 | `GET /api/subjects/{bgm_id}` | 获取单个 Bangumi 条目详情 |
-| `GET /api/subjects/{bgm_id}/ratings` | 获取条目的全部日评分历史 |
+| `GET /api/subjects/{bgm_id}/ratings` | 获取条目的日评分快照历史 |
 | `GET /images/{bgm_id}` | 获取内部封面二进制资源（仅内部封面策略可用） |
 
 - `bgm_id` 为正整数 Bangumi 条目 ID。
 - `season` 仅接受 `winter`、`spring`、`summer`、`fall`。
 - 所有最新评分均取每个条目自身日期最新的一条评分记录；不同条目的快照日期可能不同。
-- 评分历史按日期升序返回，不会填补缺失日期或插值。
+- 评分历史按日期升序返回，不会填补缺失日期或插值；不超过 30 条时完整返回，超过 30 条时按 `ceil(总记录数 / 30)` 间隔从最新快照反向采样，且始终包含最新快照。
 - 条目不存在时返回 `404` 和 `SUBJECT_NOT_FOUND`；参数非法时返回 `400` 和 `INVALID_PARAMETER`。
 
 错误响应格式：

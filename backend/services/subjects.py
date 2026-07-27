@@ -70,10 +70,10 @@ class SubjectService(object):
 
     async def get_rating_history(self, session: AsyncSession, bgm_id: int) -> RatingHistoryResponse:
         """
-        @brief 获取单个条目的全部评分历史。
+        @brief 获取单个条目的评分历史快照。
         @param session 当前请求的只读数据库会话。
         @param bgm_id Bangumi 公开条目 ID。
-        @return 按快照日期升序排列的评分历史响应。
+        @return 按快照日期升序排列的评分历史响应；超过 30 条时按间隔采样且保留最新快照。
         @throws SubjectNotFoundError 当条目不存在时抛出。
         """
         if not await subject_exists(session=session, bgm_id=bgm_id):
